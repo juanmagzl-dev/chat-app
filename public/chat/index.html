@@ -456,22 +456,133 @@
             }
         }
 
+        /* Toggle para móvil */
+        .mobile-toggle {
+            display: none;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-toggle:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .back-button {
+            display: none;
+            background: rgba(102, 126, 234, 0.1);
+            border: none;
+            color: #667eea;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .back-button:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
         /* Responsivo */
-        @media (max-width: 768px) {
+        @media (max-width: 968px) {
             .chat-container {
                 grid-template-columns: 1fr;
             }
             
+            .mobile-toggle {
+                display: block;
+            }
+            
             .users-sidebar {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                width: 100%;
+                height: calc(100vh - 70px);
+                z-index: 999;
+                transition: left 0.3s ease;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+            
+            .users-sidebar.show {
+                left: 0;
+            }
+            
+            .chat-area {
+                grid-column: 1;
+            }
+            
+            .chat-area.hide-mobile {
                 display: none;
             }
             
+            .back-button.show {
+                display: inline-block;
+            }
+            
             .header {
-                padding: 0 20px;
+                padding: 0 15px;
             }
             
             .logo {
-                font-size: 1.4em;
+                font-size: 1.3em;
+            }
+            
+            .welcome-message {
+                display: none;
+            }
+            
+            .logout-button {
+                padding: 8px 16px;
+                font-size: 0.85em;
+            }
+            
+            .messages-container {
+                padding: 20px 15px;
+            }
+            
+            .message-input-container {
+                padding: 15px;
+            }
+            
+            .notification {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                padding: 0 10px;
+            }
+            
+            .logo::before {
+                display: none;
+            }
+            
+            .logo {
+                font-size: 1.1em;
+            }
+            
+            .logout-button {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+            
+            .message {
+                max-width: 80%;
+            }
+            
+            .send-button {
+                padding: 14px 20px;
             }
         }
     </style>
@@ -480,6 +591,7 @@
     <div class="chat-container">
         <div class="header">
             <div class="header-left">
+                <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
                 <div class="logo">ChatApp</div>
                 <div class="welcome-message">Hola, <span id="username"></span></div>
             </div>
@@ -522,6 +634,26 @@
         let selectedUser = null;
         let searchTimeout;
         let unreadMessages = {}; // Almacenar mensajes no leídos por usuario
+        let isMobile = window.innerWidth <= 968;
+
+        // Detectar cambios en el tamaño de pantalla
+        window.addEventListener('resize', () => {
+            isMobile = window.innerWidth <= 968;
+        });
+
+        // Toggle del sidebar en móvil
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.users-sidebar');
+            sidebar.classList.toggle('show');
+        }
+
+        // Cerrar sidebar al seleccionar usuario en móvil
+        function closeSidebarMobile() {
+            if (isMobile) {
+                const sidebar = document.querySelector('.users-sidebar');
+                sidebar.classList.remove('show');
+            }
+        }
 
         // Verificar la autenticación al cargar la página
         window.onload = async function() {
@@ -714,6 +846,9 @@
         async function selectUser(user) {
             selectedUser = user;
             
+            // Cerrar sidebar en móvil
+            closeSidebarMobile();
+            
             // Marcar mensajes como leídos
             unreadMessages[user.id] = 0;
             
@@ -733,6 +868,7 @@
             const chatArea = document.getElementById('chatArea');
             chatArea.innerHTML = `
                 <div class="chat-header">
+                    <button class="back-button ${isMobile ? 'show' : ''}" onclick="showSidebarMobile()">← </button>
                     ${user.username}
                 </div>
                 <div id="messagesContainer" class="messages-container">
@@ -841,6 +977,23 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // Mostrar sidebar en móvil
+        function showSidebarMobile() {
+            if (isMobile) {
+                const sidebar = document.querySelector('.users-sidebar');
+                sidebar.classList.add('show');
+                selectedUser = null;
+                
+                // Mostrar mensaje de selección
+                const chatArea = document.getElementById('chatArea');
+                chatArea.innerHTML = `
+                    <div class="no-chat-selected">
+                        Selecciona un usuario para comenzar a chatear
+                    </div>
+                `;
+            }
         }
 
         // Función para cerrar sesión
