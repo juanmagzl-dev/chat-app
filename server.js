@@ -326,6 +326,11 @@ io.on('connection', (socket) => {
 
 // ============ RUTAS DE PÁGINAS ============
 
+// pagina principal
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
 // Ruta para la página de login
 app.get('/login', (req, res) => {
     res.sendFile(__dirname + '/public/registro/login.html');
